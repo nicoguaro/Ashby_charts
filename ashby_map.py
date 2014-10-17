@@ -70,25 +70,30 @@ def ellip_enclose(points, color, inc=1.2, lw=2, nst=2):
         order = vals.argsort()[::-1]
         return vals[order], vecs[:,order]
         
-    def rot_ellip(w, h, center, angle, n=26):
+    def rot_ellip(w, h, center, angle, n=50):
         angle = angle*np.pi/180
         t = np.linspace(0, 2*np.pi, n-1)
         verts = np.zeros((n,2))
         x = verts[:,0]
         y = verts[:,1]
-        x[:-1] = w*np.cos(t)
+        x[:-1] = w/2*np.cos(t)
         x[-1] = x[-2]
-        y[:-1] = h*np.sin(t)
+        x[-1] = x[0]
+        y[:-1] = h/2*np.sin(t)
         y[-2] = y[-2]
-        rot_mat = np.array([[np.cos(theta), -np.sin(theta)],
-                             [np.sin(theta), np.cos(theta)]])     
+        y[-1] = y[0]
+        rot_mat = np.array([[np.cos(theta), np.sin(theta)],
+                             [-np.sin(theta), np.cos(theta)]])     
         verts = np.dot(verts, rot_mat.T)
         
         verts = verts + center
               
-        codes = [4 for j in range(n)]
-        codes[0] = 1
-        codes[-1] = 79
+        codes = [Path.CURVE4 for j in range(n)]
+        codes = [Path.LINETO for j in range(n)]
+        codes[0] = Path.MOVETO
+        codes[-1] = Path.CLOSEPOLY
+        codes[-1] = Path.LINETO
+#        codes = None
         return Path(verts, codes)
         
     
@@ -97,19 +102,17 @@ def ellip_enclose(points, color, inc=1.2, lw=2, nst=2):
     cov = np.cov(x, y)
     vals, vecs = eigsorted(cov)
     theta = np.degrees(np.arctan2(*vecs[:,0][::-1]))
-    print theta
     w, h = 2 * nst * np.sqrt(vals)        
     center = np.mean(points, 0)
     ell = patches.Ellipse(center, width=inc*w, height=inc*h, angle=theta,
                           facecolor=color, alpha=0.2, lw=0)
     edge = patches.Ellipse(center, width=inc*w, height=inc*h, angle=theta,
                           facecolor='none', edgecolor=color, lw=lw)
-#    path = ell.get_path()
-#    print path, len(path.vertices),len(path.codes)
-#    plt.plot(path.vertices[:,0], path.vertices[:,1])
-#    path = rot_ellip(w, h, center, theta, 26)
-#    patch = patches.PathPatch(path, facecolor=color, lw=2, alpha=0.2)
+    path = rot_ellip(inc*w, inc*h, center, theta, 100)
+    patch = patches.PathPatch(path, facecolor=color, lw=0, alpha=0.2)
+    edge = patches.PathPatch(path, facecolor='none', edgecolor=color, lw=lw)
 #    plt.gca().add_patch(patch)
+#    plt.gca().add_patch(edge)
     plt.gca().add_artist(ell)
     plt.gca().add_artist(edge)
 
