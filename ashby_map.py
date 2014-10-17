@@ -16,7 +16,7 @@ rcParams['font.family'] = 'serif'
 rcParams['font.size'] = 16
 
 
-def convex_poly(points, color, inc=1.2, rad=0.3, lw=2):
+def poly_enclose(points, color, inc=1.2, rad=0.3, lw=2):
     """
     Plot the convex hull around a set of points as a 
     shaded polygon.
@@ -58,6 +58,61 @@ def convex_poly(points, color, inc=1.2, rad=0.3, lw=2):
     plt.gca().add_patch(edge)
 
 
+def ellip_enclose(points, color, inc=1.2, lw=2, nst=2):
+    """
+    Plot the minimum ellipse around a set of points.
+    
+    https://github.com/joferkington/oost_paper_code/blob/master/error_ellipse.py
+    """
+    
+    def eigsorted(cov):
+        vals, vecs = np.linalg.eigh(cov)
+        order = vals.argsort()[::-1]
+        return vals[order], vecs[:,order]
+        
+    def rot_ellip(w, h, center, angle, n=26):
+        angle = angle*np.pi/180
+        t = np.linspace(0, 2*np.pi, n-1)
+        verts = np.zeros((n,2))
+        x = verts[:,0]
+        y = verts[:,1]
+        x[:-1] = w*np.cos(t)
+        x[-1] = x[-2]
+        y[:-1] = h*np.sin(t)
+        y[-2] = y[-2]
+        rot_mat = np.array([[np.cos(theta), -np.sin(theta)],
+                             [np.sin(theta), np.cos(theta)]])     
+        verts = np.dot(verts, rot_mat.T)
+        
+        verts = verts + center
+              
+        codes = [4 for j in range(n)]
+        codes[0] = 1
+        codes[-1] = 79
+        return Path(verts, codes)
+        
+    
+    x = points[:,0]
+    y = points[:,1]
+    cov = np.cov(x, y)
+    vals, vecs = eigsorted(cov)
+    theta = np.degrees(np.arctan2(*vecs[:,0][::-1]))
+    print theta
+    w, h = 2 * nst * np.sqrt(vals)        
+    center = np.mean(points, 0)
+    ell = patches.Ellipse(center, width=inc*w, height=inc*h, angle=theta,
+                          facecolor=color, alpha=0.2, lw=0)
+    edge = patches.Ellipse(center, width=inc*w, height=inc*h, angle=theta,
+                          facecolor='none', edgecolor=color, lw=lw)
+#    path = ell.get_path()
+#    print path, len(path.vertices),len(path.codes)
+#    plt.plot(path.vertices[:,0], path.vertices[:,1])
+#    path = rot_ellip(w, h, center, theta, 26)
+#    patch = patches.PathPatch(path, facecolor=color, lw=2, alpha=0.2)
+#    plt.gca().add_patch(patch)
+    plt.gca().add_artist(ell)
+    plt.gca().add_artist(edge)
+
 
 inc = 1.2
 rad = 0.3
@@ -71,7 +126,9 @@ plt.figure()
 for k in range(4):
     points = 1.5*(np.random.rand(30, 2) - 0.5) + k
     plt.plot(points[:,0], points[:,1], 'o', ms=5, color=colors[k])
-    convex_poly(points, colors[k], inc=inc, rad=rad, lw=lw)
+#    plt.loglog(points[:,0], points[:,1], 'o', ms=5, color=colors[k])
+#    poly_enclose(points, colors[k], inc=inc, rad=rad, lw=lw)
+    ellip_enclose(points, colors[k], inc=inc, lw=lw)
     
 plt.grid(True)
 plt.xlabel(r"$x$", size=18)
@@ -95,8 +152,10 @@ for k, key  in enumerate(E.keys()):
     x = rho[key][:,0] * 1000
     y = E[key][:,0] * 1e9
     points = np.vstack([x,y]).T
-    convex_poly(points, colors[k], inc=inc, rad=0.3, lw=lw)
-    plt.loglog(x, y, 'o', ms=5, color=colors[k])
+    poly_enclose(points, colors[k], inc=inc, rad=0.3, lw=lw)
+#    ellip_enclose(points, colors[k], inc=inc, lw=lw)
+#    plt.loglog(x, y, 'o', ms=5, color=colors[k])
+    plt.plot(x, y, 'o', ms=5, color=colors[k])
     
 plt.xlabel(r"Density $\rho$ (kg/m$^3$)", size=18)
 plt.ylabel(r"Young Modulus $E$ (GPa)", size=18)
