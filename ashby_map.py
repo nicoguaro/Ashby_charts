@@ -127,15 +127,16 @@ plt.close('all')
 ##
 plt.figure()
 for k in range(4):
-    points = 1.5*(np.random.rand(30, 2) - 0.5) + k
-    plt.plot(points[:,0], points[:,1], 'o', ms=5, color=colors[k])
-#    plt.loglog(points[:,0], points[:,1], 'o', ms=5, color=colors[k])
+    points = 1.5*(np.random.rand(20, 2) - 0.5) + k
+    plt.plot(points[:,0], points[:,1], 'o', ms=8, color=colors[k], mfc="white", mec=[0.1,0.1,0.1])
+#    plt.loglog(points[:,0], points[:,1], 'o', ms=8, color=colors[k], mfc="white", mec=[0.1,0.1,0.1])
 #    poly_enclose(points, colors[k], inc=inc, rad=rad, lw=lw)
     ellip_enclose(points, colors[k], inc=inc, lw=lw)
     
 plt.grid(True)
 plt.xlabel(r"$x$", size=18)
 plt.ylabel(r"$y$", size=18)
+####plt.savefig("lin-example.pdf")
   
 ##  
 E = {}
@@ -157,11 +158,12 @@ for k, key  in enumerate(E.keys()):
     points = np.vstack([x,y]).T
     poly_enclose(points, colors[k], inc=inc, rad=0.3, lw=lw)
 #    ellip_enclose(points, colors[k], inc=inc, lw=lw)
-#    plt.loglog(x, y, 'o', ms=5, color=colors[k])
-    plt.plot(x, y, 'o', ms=5, color=colors[k])
+    plt.loglog(x, y, 'o', ms=8, color=colors[k], mfc="white", mec=[0.1,0.1,0.1])
+#    plt.plot(x, y, 'o', ms=8, color=colors[k], mfc="white", mec=[0.1,0.1,0.1])
     
 plt.xlabel(r"Density $\rho$ (kg/m$^3$)", size=18)
 plt.ylabel(r"Young Modulus $E$ (GPa)", size=18)
+##plt.savefig("log-example.pdf")
 
 plt.grid(True)
 plt.show()
