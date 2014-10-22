@@ -108,9 +108,9 @@ def ellip_enclose(points, color, inc=1.2, lw=2, nst=2):
                           facecolor=color, alpha=0.2, lw=0)
     edge = patches.Ellipse(center, width=inc*w, height=inc*h, angle=theta,
                           facecolor='none', edgecolor=color, lw=lw)
-    path = rot_ellip(inc*w, inc*h, center, theta, 100)
-    patch = patches.PathPatch(path, facecolor=color, lw=0, alpha=0.2)
-    edge = patches.PathPatch(path, facecolor='none', edgecolor=color, lw=lw)
+##    path = rot_ellip(inc*w, inc*h, center, theta, 100)
+##    patch = patches.PathPatch(path, facecolor=color, lw=0, alpha=0.2)
+##    edge = patches.PathPatch(path, facecolor='none', edgecolor=color, lw=lw)
 #    plt.gca().add_patch(patch)
 #    plt.gca().add_patch(edge)
     plt.gca().add_artist(ell)
@@ -128,15 +128,16 @@ plt.close('all')
 plt.figure()
 for k in range(4):
     points = 1.5*(np.random.rand(20, 2) - 0.5) + k
-    plt.plot(points[:,0], points[:,1], 'o', ms=8, color=colors[k], mfc="white", mec=[0.1,0.1,0.1])
-#    plt.loglog(points[:,0], points[:,1], 'o', ms=8, color=colors[k], mfc="white", mec=[0.1,0.1,0.1])
-#    poly_enclose(points, colors[k], inc=inc, rad=rad, lw=lw)
-    ellip_enclose(points, colors[k], inc=inc, lw=lw)
+##    plt.plot(points[:,0], points[:,1], 'o', ms=8, color=colors[k], mfc="white", mec=[0.1,0.1,0.1])
+    plt.loglog(points[:,0], points[:,1], 'o', ms=8, color=colors[k], mfc="white", mec=[0.1,0.1,0.1])
+    poly_enclose(points, colors[k], inc=inc, rad=rad, lw=lw)
+##    ellip_enclose(points, colors[k], inc=inc, lw=lw)
     
 plt.grid(True)
 plt.xlabel(r"$x$", size=18)
 plt.ylabel(r"$y$", size=18)
-####plt.savefig("lin-example.pdf")
+##plt.savefig("lin-example.pdf")
+##plt.savefig("lin-example.png", dpi=300)
   
 ##  
 E = {}
@@ -156,14 +157,16 @@ for k, key  in enumerate(E.keys()):
     x = rho[key][:,0] * 1000
     y = E[key][:,0] * 1e9
     points = np.vstack([x,y]).T
-    poly_enclose(points, colors[k], inc=inc, rad=0.3, lw=lw)
-#    ellip_enclose(points, colors[k], inc=inc, lw=lw)
+##    poly_enclose(points, colors[k], inc=inc, rad=0.3, lw=lw)
+    ellip_enclose(points, colors[k], inc=inc, lw=lw)
     plt.loglog(x, y, 'o', ms=8, color=colors[k], mfc="white", mec=[0.1,0.1,0.1])
 #    plt.plot(x, y, 'o', ms=8, color=colors[k], mfc="white", mec=[0.1,0.1,0.1])
     
 plt.xlabel(r"Density $\rho$ (kg/m$^3$)", size=18)
 plt.ylabel(r"Young Modulus $E$ (GPa)", size=18)
 ##plt.savefig("log-example.pdf")
+##plt.savefig("log-example.png", dpi=300)
+
 
 plt.grid(True)
 plt.show()
