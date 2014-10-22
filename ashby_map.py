@@ -43,7 +43,8 @@ def poly_enclose(points, color, inc=1.2, rad=0.3, lw=2):
     verts2[2::3,:] = rad*verts[0:-1,:] + (1-rad)*verts[1:,:]
     verts2[0:-1] = verts2[1:]
     verts2[-1] = verts2[0]
-    
+
+
     
     codes = [Path.MOVETO, Path.LINETO, Path.CURVE3,]
     for j in range(len(pts)-2):
@@ -70,32 +71,6 @@ def ellip_enclose(points, color, inc=1.2, lw=2, nst=2):
         order = vals.argsort()[::-1]
         return vals[order], vecs[:,order]
         
-    def rot_ellip(w, h, center, angle, n=50):
-        angle = angle*np.pi/180
-        t = np.linspace(0, 2*np.pi, n-1)
-        verts = np.zeros((n,2))
-        x = verts[:,0]
-        y = verts[:,1]
-        x[:-1] = w/2*np.cos(t)
-        x[-1] = x[-2]
-        x[-1] = x[0]
-        y[:-1] = h/2*np.sin(t)
-        y[-2] = y[-2]
-        y[-1] = y[0]
-        rot_mat = np.array([[np.cos(theta), np.sin(theta)],
-                             [-np.sin(theta), np.cos(theta)]])     
-        verts = np.dot(verts, rot_mat.T)
-        
-        verts = verts + center
-              
-        codes = [Path.CURVE4 for j in range(n)]
-        codes = [Path.LINETO for j in range(n)]
-        codes[0] = Path.MOVETO
-        codes[-1] = Path.CLOSEPOLY
-        codes[-1] = Path.LINETO
-#        codes = None
-        return Path(verts, codes)
-        
     
     x = points[:,0]
     y = points[:,1]
@@ -108,11 +83,6 @@ def ellip_enclose(points, color, inc=1.2, lw=2, nst=2):
                           facecolor=color, alpha=0.2, lw=0)
     edge = patches.Ellipse(center, width=inc*w, height=inc*h, angle=theta,
                           facecolor='none', edgecolor=color, lw=lw)
-##    path = rot_ellip(inc*w, inc*h, center, theta, 100)
-##    patch = patches.PathPatch(path, facecolor=color, lw=0, alpha=0.2)
-##    edge = patches.PathPatch(path, facecolor='none', edgecolor=color, lw=lw)
-#    plt.gca().add_patch(patch)
-#    plt.gca().add_patch(edge)
     plt.gca().add_artist(ell)
     plt.gca().add_artist(edge)
 
@@ -127,12 +97,16 @@ plt.close('all')
 ##
 plt.figure()
 for k in range(4):
-    points = 1.5*(np.random.rand(20, 2) - 0.5) + k
-##    plt.plot(points[:,0], points[:,1], 'o', ms=8, color=colors[k], mfc="white", mec=[0.1,0.1,0.1])
-    plt.loglog(points[:,0], points[:,1], 'o', ms=8, color=colors[k], mfc="white", mec=[0.1,0.1,0.1])
+    points = 1.5*(np.random.rand(20, 2) - 0.5) + k + 3
+    plt.plot(points[:,0], points[:,1], 'o', ms=8, color=colors[k],
+             mfc="white", mec=colors[k])
+    plt.loglog(points[:,0], points[:,1], 'o', ms=8, color=colors[k],
+               mfc="white", mec=colors[k])
     poly_enclose(points, colors[k], inc=inc, rad=rad, lw=lw)
 ##    ellip_enclose(points, colors[k], inc=inc, lw=lw)
-    
+
+plt.xscale('symlog')
+plt.yscale('symlog')
 plt.grid(True)
 plt.xlabel(r"$x$", size=18)
 plt.ylabel(r"$y$", size=18)
@@ -158,17 +132,19 @@ for k, key  in enumerate(E.keys()):
     y = E[key][:,0] * 1e9
     points = np.vstack([x,y]).T
 ##    poly_enclose(points, colors[k], inc=inc, rad=0.3, lw=lw)
-    ellip_enclose(points, colors[k], inc=inc, lw=lw)
-    plt.loglog(x, y, 'o', ms=8, color=colors[k], mfc="white", mec=[0.1,0.1,0.1])
-#    plt.plot(x, y, 'o', ms=8, color=colors[k], mfc="white", mec=[0.1,0.1,0.1])
-    
+    ellip_enclose(points, colors[k], inc=1, lw=lw)
+##    plt.loglog(x, y, 'o', ms=8, color=colors[k], mfc="white", mec=colors[k])
+    plt.plot(x, y, 'o', ms=8, color=colors[k], mfc="white", mec=colors[k])
+
+plt.xscale('symlog')
+plt.yscale('symlog')
 plt.xlabel(r"Density $\rho$ (kg/m$^3$)", size=18)
 plt.ylabel(r"Young Modulus $E$ (GPa)", size=18)
 ##plt.savefig("log-example.pdf")
 ##plt.savefig("log-example.png", dpi=300)
 
 
-plt.grid(True)
+##plt.grid(True)
 plt.show()
 
 
