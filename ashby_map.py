@@ -3,7 +3,7 @@
 Plot Ashby Charts.
 
 @author: Nicolas Guarin Zapata
-@date: October 15, 2014
+@date: October, 2014
 """
 import numpy as np
 from scipy.spatial import ConvexHull
@@ -87,6 +87,18 @@ def ellip_enclose(points, color, inc=1.2, lw=2, nst=2):
     plt.gca().add_artist(edge)
 
 
+def plot_group(points, color, inc=1.2, lw=2, rad=0.3, nst=2, enclosing="poly", scaling="symlog"):
+    plt.plot(points[:,0], points[:,1], 'o', ms=8, color=color,
+             mfc="white", mec=color)
+    if enclosing=="poly":
+        poly_enclose(points, color, inc=inc, rad=rad, lw=lw)
+    elif enclosing=="ellipse":
+        ellip_enclose(points, color, inc=inc, lw=lw, nst=nst)
+    else:
+        raise Exception("Not know enclosing option.")
+    plt.xscale(scaling)
+    plt.yscale(scaling)
+
 inc = 1.2
 rad = 0.3
 lw = 2
@@ -98,53 +110,41 @@ plt.close('all')
 plt.figure()
 for k in range(4):
     points = 1.5*(np.random.rand(20, 2) - 0.5) + k + 3
-    plt.plot(points[:,0], points[:,1], 'o', ms=8, color=colors[k],
-             mfc="white", mec=colors[k])
-    plt.loglog(points[:,0], points[:,1], 'o', ms=8, color=colors[k],
-               mfc="white", mec=colors[k])
-    poly_enclose(points, colors[k], inc=inc, rad=rad, lw=lw)
-##    ellip_enclose(points, colors[k], inc=inc, lw=lw)
+    plot_group(points, colors[k], enclosing="poly")
 
-plt.xscale('symlog')
-plt.yscale('symlog')
-plt.grid(True)
-plt.xlabel(r"$x$", size=18)
-plt.ylabel(r"$y$", size=18)
-##plt.savefig("lin-example.pdf")
-##plt.savefig("lin-example.png", dpi=300)
+#plt.grid(True)
+
+#plt.savefig("lin-example.pdf")
+#plt.savefig("lin-example.png", dpi=300)
   
 ##  
 E = {}
-E["poly"] = np.loadtxt('young_poly.txt')
-E["metals"] = np.loadtxt('young_metals.txt')
-E["comp"] = np.loadtxt('young_comp.txt')
-E["ceramic"] = np.loadtxt('young_ceramic.txt')
+E["poly"] = np.loadtxt('props/young_poly.txt')
+E["metals"] = np.loadtxt('props/young_metals.txt')
+E["comp"] = np.loadtxt('props/young_comp.txt')
+E["ceramic"] = np.loadtxt('props/young_ceramic.txt')
 
 rho = {}
-rho["poly"] = np.loadtxt('dens_poly.txt')
-rho["metals"] = np.loadtxt('dens_metals.txt')
-rho["comp"] = np.loadtxt('dens_comp.txt')
-rho["ceramic"] = np.loadtxt('dens_ceramic.txt')
+rho["poly"] = np.loadtxt('props/dens_poly.txt')
+rho["metals"] = np.loadtxt('props/dens_metals.txt')
+rho["comp"] = np.loadtxt('props/dens_comp.txt')
+rho["ceramic"] = np.loadtxt('props/dens_ceramic.txt')
 
 plt.figure()
 for k, key  in enumerate(E.keys()):
-    x = rho[key][:,0] * 1000
-    y = E[key][:,0] * 1e9
+    x = rho[key][:,0] * 1000  # Units to be in kg*m**-3
+    y = E[key][:,0] *1e9  # Units to be in Pa
     points = np.vstack([x,y]).T
-##    poly_enclose(points, colors[k], inc=inc, rad=0.3, lw=lw)
-    ellip_enclose(points, colors[k], inc=1, lw=lw)
-##    plt.loglog(x, y, 'o', ms=8, color=colors[k], mfc="white", mec=colors[k])
-    plt.plot(x, y, 'o', ms=8, color=colors[k], mfc="white", mec=colors[k])
+    plot_group(points, colors[k], enclosing="poly")
 
-plt.xscale('symlog')
-plt.yscale('symlog')
+plt.xlim(10, 1e5)
+plt.ylim(1e5, 1e13)
 plt.xlabel(r"Density $\rho$ (kg/m$^3$)", size=18)
-plt.ylabel(r"Young Modulus $E$ (GPa)", size=18)
-##plt.savefig("log-example.pdf")
-##plt.savefig("log-example.png", dpi=300)
+plt.ylabel(r"Young Modulus $E$ (Pa)", size=18)
+#plt.savefig("log-example.pdf")
+#plt.savefig("log-example.png", dpi=300)
 
-
-##plt.grid(True)
+plt.grid(True)
 plt.show()
 
 
