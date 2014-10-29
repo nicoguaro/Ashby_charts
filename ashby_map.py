@@ -61,9 +61,17 @@ def poly_enclose(points, color, inc=1.2, rad=0.3, lw=2):
 
 def ellip_enclose(points, color, inc=1.2, lw=2, nst=2):
     """
-    Plot the minimum ellipse around a set of points.
+    Plot the an ellipse around a set of points using Principal
+	Component Analysis [1, 2].
     
-    https://github.com/joferkington/oost_paper_code/blob/master/error_ellipse.py
+    	
+	References
+	==========
+	[1] Jofer Kington https://github.com/joferkington/oost_paper_code/blob/master/error_ellipse.py
+	
+	[2] Wikipedia contributors. "Principal component analysis." 
+	Wikipedia, The Free Encyclopedia. Wikipedia, The Free Encyclopedia,
+	29 Oct. 2014. Web. 29 Oct. 2014. 
     """
     
     def eigsorted(cov):

@@ -1,0 +1,5 @@
+Minimum Volume Enclosing Ellipsoid: http://www.mathworks.com/matlabcentral/fileexchange/9542-minimum-volume-enclosing-ellipsoid
+
+Port MATLAB bounding ellipsoid code to Python: http://stackoverflow.com/questions/14016898/port-matlab-bounding-ellipsoid-code-to-python
+
+Bounding ellipse: http://stackoverflow.com/questions/1768197/bounding-ellipse/1768440#1768440
