@@ -21,9 +21,9 @@ def poly_enclose(points, color, inc=1.2, rad=0.3, lw=2):
     Plot the convex hull around a set of points as a 
     shaded polygon.
     """
+    points = np.log(points)
     hull = ConvexHull(points)
-    
-    
+
     cent = np.mean(points, 0)
     pts = []
     for pt in points[hull.simplices]:
@@ -55,8 +55,8 @@ def poly_enclose(points, color, inc=1.2, rad=0.3, lw=2):
     path = Path(verts2, codes)
     patch = patches.PathPatch(path, facecolor=color, lw=0, alpha=0.2)
     edge = patches.PathPatch(path, edgecolor=color, facecolor='none', lw=lw)
-    plt.gca().add_patch(patch)
-    plt.gca().add_patch(edge)
+    patch._path._vertices = np.exp(patch._path._vertices)
+    return patch, edge
 
 
 def ellip_enclose(points, color, inc=1.2, lw=2, nst=2):
@@ -77,83 +77,78 @@ def ellip_enclose(points, color, inc=1.2, lw=2, nst=2):
     def eigsorted(cov):
         vals, vecs = np.linalg.eigh(cov)
         order = vals.argsort()[::-1]
-        return vals[order], vecs[:,order]
+        return vals[order], vecs[:, order]
         
-    
-    x = points[:,0]
-    y = points[:,1]
+    points = np.log(points)
+    x = points[:, 0]
+    y = points[:, 1]
     cov = np.cov(x, y)
     vals, vecs = eigsorted(cov)
     theta = np.degrees(np.arctan2(*vecs[:,0][::-1]))
     w, h = 2 * nst * np.sqrt(vals)        
     center = np.mean(points, 0)
-    ell = patches.Ellipse(center, width=inc*w, height=inc*h, angle=theta,
+    patch = patches.Ellipse(center, width=inc*w, height=inc*h, angle=theta,
                           facecolor=color, alpha=0.2, lw=0)
     edge = patches.Ellipse(center, width=inc*w, height=inc*h, angle=theta,
                           facecolor='none', edgecolor=color, lw=lw)
-    plt.gca().add_artist(ell)
-    plt.gca().add_artist(edge)
+    edge._path._vertices = np.exp(edge._path._vertices)
+    return patch, edge
 
 
-def plot_group(points, color, inc=1.2, lw=2, rad=0.3, nst=2, enclosing="poly", scaling="symlog"):
+def plot_group(points, color, inc=1.2, lw=2, rad=0.3, nst=2, enclosing="poly",
+               scaling="log"):
     plt.plot(points[:,0], points[:,1], 'o', ms=8, color=color,
              mfc="white", mec=color)
     if enclosing=="poly":
-        poly_enclose(points, color, inc=inc, rad=rad, lw=lw)
+        patch, edge = poly_enclose(points, color, inc=inc,
+                                   rad=rad, lw=lw)
     elif enclosing=="ellipse":
-        ellip_enclose(points, color, inc=inc, lw=lw, nst=nst)
+        patch, edge = ellip_enclose(points, color, inc=1,
+                                    lw=lw, nst=nst)
     else:
         raise Exception("Not know enclosing option.")
-    plt.xscale(scaling)
-    plt.yscale(scaling)
 
-inc = 1.2
-rad = 0.3
-lw = 2
-colors = ['blue', 'green', 'red', 'orange']
+#    plt.xscale(scaling)
+#    plt.yscale(scaling)
+    plt.gca().add_patch(patch)
+    plt.gca().add_patch(edge)
 
-plt.close('all')
+if __name__ == "__main__":
+    inc = 1.5
+    rad = 0.3
+    lw = 2
+    colors = ['blue', 'green', 'red', 'orange']
+    
 
-##
-plt.figure()
-for k in range(4):
-    points = 1.5*(np.random.rand(20, 2) - 0.5) + k + 3
-    plot_group(points, colors[k], enclosing="poly")
-
-#plt.grid(True)
-
-#plt.savefig("lin-example.pdf")
-#plt.savefig("lin-example.png", dpi=300)
-  
-##  
-E = {}
-E["poly"] = np.loadtxt('props/young_poly.txt')
-E["metals"] = np.loadtxt('props/young_metals.txt')
-E["comp"] = np.loadtxt('props/young_comp.txt')
-E["ceramic"] = np.loadtxt('props/young_ceramic.txt')
-
-rho = {}
-rho["poly"] = np.loadtxt('props/dens_poly.txt')
-rho["metals"] = np.loadtxt('props/dens_metals.txt')
-rho["comp"] = np.loadtxt('props/dens_comp.txt')
-rho["ceramic"] = np.loadtxt('props/dens_ceramic.txt')
-
-plt.figure()
-for k, key  in enumerate(E.keys()):
-    x = rho[key][:,0] * 1000  # Units to be in kg*m**-3
-    y = E[key][:,0] *1e9  # Units to be in Pa
-    points = np.vstack([x,y]).T
-    plot_group(points, colors[k], enclosing="poly")
-
-plt.xlim(10, 1e5)
-plt.ylim(1e5, 1e13)
-plt.xlabel(r"Density $\rho$ (kg/m$^3$)", size=18)
-plt.ylabel(r"Young Modulus $E$ (Pa)", size=18)
-#plt.savefig("log-example.pdf")
-#plt.savefig("log-example.png", dpi=300)
-
-plt.grid(True)
-plt.show()
+    E = {}
+    E["poly"] = np.loadtxt('props/young_poly.txt')
+    E["metals"] = np.loadtxt('props/young_metals.txt')
+    E["comp"] = np.loadtxt('props/young_comp.txt')
+    E["ceramic"] = np.loadtxt('props/young_ceramic.txt')
+    
+    rho = {}
+    rho["poly"] = np.loadtxt('props/dens_poly.txt')
+    rho["metals"] = np.loadtxt('props/dens_metals.txt')
+    rho["comp"] = np.loadtxt('props/dens_comp.txt')
+    rho["ceramic"] = np.loadtxt('props/dens_ceramic.txt')
+    
+    plt.figure()
+    for k, key  in enumerate(E.keys()):
+        x = rho[key][:,0] * 1000  # Units to be in kg*m**-3
+        y = E[key][:,0] *1e9  # Units to be in Pa
+        points = np.vstack([x,y]).T
+        plot_group(points, colors[k], enclosing="ellipse", inc=inc, rad=rad)
+    
+    plt.xlabel(r"Density $\rho$ (kg/m$^3$)", size=18)
+    plt.ylabel(r"Young Modulus $E$ (Pa)", size=18)
+    plt.grid(True)
+    
+    
+    #plt.savefig("log-example.svg")
+    #plt.savefig("log-example.pdf")
+    #plt.savefig("log-example.png", dpi=300)
+    
+    plt.show()
 
 
 
